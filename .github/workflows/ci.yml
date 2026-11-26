@@ -71,6 +71,9 @@ jobs:
     name: Build and scan ${{ matrix.service }}
     needs: [quality, manifests]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:
