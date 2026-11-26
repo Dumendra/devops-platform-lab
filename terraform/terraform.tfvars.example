@@ -1,0 +1,7 @@
+aws_region        = "us-east-1"
+environment       = "dev"
+repository_prefix = "devops-platform"
+services          = ["gateway", "orders", "users"]
+force_delete      = true
+github_org        = "Dumendra"
+github_repo       = "devops-platform-lab"

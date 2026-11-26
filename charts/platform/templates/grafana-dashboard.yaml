@@ -1,0 +1,31 @@
+{{- if .Values.monitoring.dashboard.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "platform.fullname" . }}-dashboard
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "platform.labels" . | nindent 4 }}
+    grafana_dashboard: "1"
+data:
+  platform.json: |
+    {
+      "title": "Platform Lab Overview",
+      "uid": "platform-lab",
+      "schemaVersion": 39,
+      "panels": [
+        {
+          "type": "timeseries",
+          "title": "Request rate",
+          "targets": [{"expr": "sum(rate(http_requests_total[5m])) by (service)"}],
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+        },
+        {
+          "type": "stat",
+          "title": "Uptime by service",
+          "targets": [{"expr": "max by (service) (app_uptime_seconds)"}],
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+        }
+      ]
+    }
+{{- end }}

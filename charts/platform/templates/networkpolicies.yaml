@@ -1,0 +1,48 @@
+{{- $root := . -}}
+{{- if .Values.security.networkPolicies }}
+{{- range $name, $svc := .Values.services }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "platform.fullname" $root }}-{{ $name }}
+  namespace: {{ $root.Release.Namespace }}
+  labels:
+    {{- include "platform.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $name }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "platform.selectorLabels" $root | nindent 6 }}
+      app.kubernetes.io/component: {{ $name }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    {{- if eq $name "gateway" }}
+    - {}
+    {{- else }}
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "platform.selectorLabels" $root | nindent 14 }}
+              app.kubernetes.io/component: gateway
+      ports:
+        - protocol: TCP
+          port: 8000
+    {{- end }}
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              {{- include "platform.selectorLabels" $root | nindent 14 }}
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+{{- end }}
+{{- end }}

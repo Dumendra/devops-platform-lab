@@ -1,0 +1,80 @@
+nameOverride: ""
+
+global:
+  environment: dev
+  imagePullPolicy: IfNotPresent
+
+services:
+  gateway:
+    image: ghcr.io/dumendra/devops-platform-lab/gateway
+    tag: dev
+    replicas: 2
+    autoscale: true
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 128Mi
+  orders:
+    image: ghcr.io/dumendra/devops-platform-lab/orders
+    tag: dev
+    replicas: 2
+    autoscale: false
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 128Mi
+  users:
+    image: ghcr.io/dumendra/devops-platform-lab/users
+    tag: dev
+    replicas: 2
+    autoscale: false
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 128Mi
+
+ingress:
+  enabled: true
+  className: nginx
+  host: platform.local
+  tls:
+    enabled: false
+    secretName: platform-tls
+
+postgres:
+  enabled: true
+  image: postgres:16-alpine
+  database: platform
+  user: platform
+  password: platform
+  storage: 1Gi
+
+redis:
+  enabled: true
+  image: redis:7-alpine
+
+autoscaling:
+  enabled: false
+  targetCPU: 70
+  minReplicas: 2
+  maxReplicas: 6
+
+security:
+  networkPolicies: false
+  podDisruptionBudgets: true
+
+monitoring:
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+  dashboard:
+    enabled: false

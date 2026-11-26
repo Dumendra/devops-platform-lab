@@ -1,0 +1,29 @@
+global:
+  environment: dev
+
+services:
+  gateway:
+    replicas: 1
+    tag: dev
+  orders:
+    replicas: 1
+    tag: dev
+  users:
+    replicas: 1
+    tag: dev
+
+ingress:
+  host: platform.local
+
+security:
+  networkPolicies: false
+  podDisruptionBudgets: false
+
+autoscaling:
+  enabled: false
+
+monitoring:
+  serviceMonitor:
+    enabled: false
+  dashboard:
+    enabled: false

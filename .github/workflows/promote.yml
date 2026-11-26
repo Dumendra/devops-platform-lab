@@ -1,0 +1,48 @@
+name: Promote
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to promote, for example sha-abc1234"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  promote:
+    name: Open production promotion PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v7
+
+      - name: Update production values
+        id: promote
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          branch="release/${{ inputs.image_tag }}"
+          git checkout -b "$branch"
+          sed -i -E "s|^(    tag:).*|\1 ${{ inputs.image_tag }}|" charts/platform/values-prod.yaml
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git add charts/platform/values-prod.yaml
+            git commit -m "Promote ${{ inputs.image_tag }} to production"
+            git push origin "$branch"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open pull request
+        if: steps.promote.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --base main \
+            --title "Promote ${{ inputs.image_tag }} to production" \
+            --body "Automated promotion by the Promote workflow."
