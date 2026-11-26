@@ -121,4 +121,12 @@ jobs:
         run: |
           IMAGE="ghcr.io/${{ steps.image.outputs.name }}/${{ matrix.service }}"
           docker tag local/${{ matrix.service }}:${{ github.sha }} "${IMAGE}:sha-${{ github.sha }}"
-          docker push "${IMAGE}:sha-${{ github.sha }}"
+          for attempt in 1 2 3; do
+            if docker push "${IMAGE}:sha-${{ github.sha }}"; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              exit 1
+            fi
+            sleep 10
+          done
