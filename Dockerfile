@@ -19,6 +19,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     APP_VERSION=${APP_VERSION} \
     SERVICE_NAME=${SERVICE}
 
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN groupadd --gid 1001 app \
     && useradd --uid 1001 --gid app --create-home app
 
